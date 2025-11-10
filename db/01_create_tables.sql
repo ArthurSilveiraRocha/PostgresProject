@@ -22,5 +22,3 @@ CREATE TABLE pilotos_equipes (
     data_inicio date not null,
     
 );
-
-jhv oyuvyulbio
