@@ -1,3 +1,75 @@
+-- Arthur Rocha e Kauã Duarte
+--------------------------
+
+/*
+Legendas
+SERIAL -> Incrementa o valor conforme quantia de inserts na tabela
+    Ex: Insert 1, id 1, Insert 2, id 2...
+
+NOT NULL -> Não permite que, no insert, o campo seja deixado em branco
+
+UNIQUE -> Não permite que, no insert, seja adicionado outro campo
+com conteúdo idêntico
+
+INTERVAL (Tipo de Variável) -> Utilizada para armazenar um período de tempo
+    Formato: 'ano', 'mês', 'dia', 'hora', 'minuto', 'segundo'
+*/
+
+-- Criação de Tabelas
+
+CREATE TABLE IF NOT EXISTS paises(
+    id_pais serial primary key,
+    sigla char(3),
+    nome varchar(100) not null
+);
+
+CREATE TABLE IF NOT EXISTS equipes(
+    id_equipe serial primary key,
+    nome varchar(100) not null unique,
+    id_pais int references paises(id_pais)
+);
+
+CREATE TABLE IF NOT EXISTS pilotos(
+    id_piloto serial primary key,
+    nome varchar(100) not null,
+    id_pais int references paises(id_pais)
+);
+
+CREATE TABLE IF NOT EXISTS pilotos_equipes (
+    id_equipe int references equipes(id_equipe),
+    id_piloto int references pilotos(id_piloto),
+    data_inicio date not null,
+    primary key (id_equipe, id_piloto, data_inicio)   
+);
+
+CREATE TABLE IF NOT EXISTS circuitos (
+    id_circuito serial primary key,
+    nome varchar(100) not null,
+    id_pais int references paises(id_pais)
+);
+
+CREATE TABLE IF NOT EXISTS corridas(
+    id_corrida serial primary key,
+    data_corrida date not null,
+    nome_corrida varchar(100) not null,
+    duracao interval,
+    id_circuito int references circuitos(id_circuito),
+    nr_voltas int
+);
+
+CREATE TABLE IF NOT EXISTS posicoes (
+    id_corrida int references corridas(id_corrida),
+    posicao_largada int,
+    posicao_chegada int,
+    tempo interval,
+    nr_voltas int,
+    pontos int,
+    id_piloto int references pilotos(id_piloto),
+    id_equipe int references equipes(id_equipe),
+    primary key (id_corrida, id_piloto)
+);
+
+
 
 -- Inserts
 
@@ -180,3 +252,73 @@ INSERT INTO posicoes VALUES
 ((SELECT id_corrida FROM corridas WHERE nome_corrida = 'Grande Prêmio da China'), 7, 18, NULL, 50, 0, (SELECT id_piloto FROM pilotos WHERE nome = 'Charles Leclerc'), (SELECT id_equipe FROM equipes WHERE nome = 'Ferrari')),
 ((SELECT id_corrida FROM corridas WHERE nome_corrida = 'Grande Prêmio da China'), 8, 19, NULL, 50, 0, (SELECT id_piloto FROM pilotos WHERE nome = 'Lewis Hamilton'), (SELECT id_equipe FROM equipes WHERE nome = 'Ferrari')),
 ((SELECT id_corrida FROM corridas WHERE nome_corrida = 'Grande Prêmio da China'), 15, 20, NULL, 50, 0, (SELECT id_piloto FROM pilotos WHERE nome = 'Pierre Gasly'), (SELECT id_equipe FROM equipes WHERE nome = 'Alpine'));
+
+
+
+
+-- Funções
+
+-- Função para cálculo dos pontos da tabela posicoes
+
+
+-- Cria ou substitui a função calcular_pontos, usando o parâmetro 'posicao'
+create or replace function calcular_pontos(posicao int)
+-- Inicia a estrutura plpgsql e indica que vai retornar um número inteiro
+returns int as $$
+begin
+-- Cria um state case usando o parâmetro da função para retornar os pontos baseado na posição do piloto na corrida
+    case posicao
+        when 1 then return 25;
+        when 2 then return 18;
+        when 3 then return 15;
+        when 4 then return 12;
+        when 5 then return 10;
+        when 6 then return 8;
+        when 7 then return 6;
+        when 8 then return 4;
+        when 9 then return 2;
+        when 10 then return 1;
+        else return 0;
+    -- Encerra o state case
+    end case;
+-- Encerra a estrutura plpgsql
+end;
+$$ language plpgsql;
+
+-- Atualiza a coluna 'pontos' da tabela 'posicoes', definindo os novos valores
+update posicoes
+-- Utiliza a função de cálculo de pontos com o parâmetro da coluna 'posicao_chegada', já preenchida na tabela
+set pontos = calcular_pontos(posicao_chegada);
+
+
+-- Trigger para bloquear criação de equipes duplicadas na tabela equipes
+
+-- Cria ou substituí a função de verificação de equipe
+create or replace function equipe_existe()
+-- Inicia a estrutura plpgpsql e indica que irá retornar uma trigger
+returns trigger as $$
+begin
+-- Inicia condicional, utilizar NEW para representar o novo input
+-- na coluna nome e compara com o que já existe
+    if exists (select 1 from equipes where nome = NEW.nome) then
+    -- Mostra um texto indicando que a linha que seria criada já existe
+        raise exception 'Equipe "%" já existe', NEW.nome;
+    -- Encerra a condicional
+    end if;
+    /* Não bloqueia exatamente que outra linha igual seja criada, mas RETURN NEW
+    faz com que a linha antiga seja subtituída pela linha idêntica criada
+    portanto, não altera o que foi inserido anteriormente, pois é idêntico ao que já constava na linha */
+    return NEW;
+-- Encerra a estrutura plpgsql
+end;
+$$ language plpgsql;
+
+-- Cria a trigger para puxar a função que verifica se a equipe existe
+create trigger trg_equipe_existe
+-- Define condicional para a trigger
+before insert on equipes
+-- Inicia estrutura de repetição para passar por cada linha dos inserts
+for each row
+-- Executa a função criada posteriormente, que verifica se a linha já existe e,
+-- caso já existir, vai impedir que seja criada uma duplicata.
+execute function equipe_existe()

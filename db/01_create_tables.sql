@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS pilotos_equipes (
     id_equipe int references equipes(id_equipe),
     id_piloto int references pilotos(id_piloto),
     data_inicio date not null,
-    data_final date,
     primary key (id_equipe, id_piloto, data_inicio)   
 );
 
