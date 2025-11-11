@@ -11,11 +11,9 @@ com conteúdo idêntico
 
 INTERVAL (Tipo de Variável) -> Utilizada para armazenar um período de tempo
     Formato: 'ano', 'mês', 'dia', 'hora', 'minuto', 'segundo'
-
-
 */
 
-/*Criação de Tabelas*/
+-- Criação de Tabelas
 
 CREATE TABLE IF NOT EXISTS paises(
     id_pais serial primary key,
