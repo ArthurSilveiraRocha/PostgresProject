@@ -4,6 +4,9 @@
 
 
 -- Tabela Países
+
+-- Inserir na tabela paises: sigla e nome -> valores: 'Sigla', 'Nome'
+
 INSERT INTO paises (sigla, nome) VALUES ('GBR', 'Reino Unido');
 INSERT INTO paises (sigla, nome) VALUES ('AUS', 'Austrália');
 INSERT INTO paises (sigla, nome) VALUES ('NED', 'Países Baixos');
@@ -25,6 +28,9 @@ INSERT INTO paises (sigla, nome) VALUES ('CHN', 'China');
 
 
 -- Tabela Equipes
+
+-- Inserir na tabela equipes: nome, id_pais -> valores: nome, procura pelo id_pais da tabela países onde sigla = 'país da equipe'
+
 INSERT INTO equipes (nome, id_pais) VALUES ('McLaren', (SELECT id_pais FROM paises WHERE sigla = 'GBR'));
 INSERT INTO equipes (nome, id_pais) VALUES ('Red Bull Racing', (SELECT id_pais FROM paises WHERE sigla = 'AUT'));
 INSERT INTO equipes (nome, id_pais) VALUES ('Mercedes', (SELECT id_pais FROM paises WHERE sigla = 'DEU'));
@@ -39,6 +45,9 @@ INSERT INTO equipes (nome, id_pais) VALUES ('Sauber', (SELECT id_pais FROM paise
 
 
 -- Tabela Pilotos
+
+-- Inserir na tabela pilotos: nome, id_pais -> valores: nome, procura pelo id_pais da tabela países onde sigla = 'país do piloto'
+
 INSERT INTO pilotos (nome, id_pais) VALUES ('Lando Norris', (SELECT id_pais FROM paises WHERE sigla = 'GBR'));
 INSERT INTO pilotos (nome, id_pais) VALUES ('Oscar Piastri', (SELECT id_pais FROM paises WHERE sigla = 'AUS'));
 INSERT INTO pilotos (nome, id_pais) VALUES ('Max Verstappen', (SELECT id_pais FROM paises WHERE sigla = 'NED'));
@@ -63,6 +72,12 @@ INSERT INTO pilotos (nome, id_pais) VALUES ('Carlos Sainz', (SELECT id_pais FROM
 
 
 -- Tabela Pilotos_Equipes
+
+-- Inserir na tabela pilotos_equipes: id_equipe, id_piloto, data_inicio -> valores:
+--   -> procura pelo id_equipe na tabela equipes onde nome = 'Nome da equipe do piloto'
+--   -> procura pelo id_piloto na tabela pilotos onde nome = 'Nome do piloto da equipe'
+--   -> data_inicio = jan/01/2025
+
 INSERT INTO pilotos_equipes (id_equipe, id_piloto, data_inicio) VALUES ((SELECT id_equipe FROM equipes WHERE nome = 'McLaren'), (SELECT id_piloto FROM pilotos WHERE nome = 'Lando Norris'), '2025-01-01');
 INSERT INTO pilotos_equipes (id_equipe, id_piloto, data_inicio) VALUES ((SELECT id_equipe FROM equipes WHERE nome = 'McLaren'), (SELECT id_piloto FROM pilotos WHERE nome = 'Oscar Piastri'), '2025-01-01');
 INSERT INTO pilotos_equipes (id_equipe, id_piloto, data_inicio) VALUES ((SELECT id_equipe FROM equipes WHERE nome = 'Red Bull Racing'), (SELECT id_piloto FROM pilotos WHERE nome = 'Max Verstappen'), '2025-01-01');
@@ -87,16 +102,35 @@ INSERT INTO pilotos_equipes (id_equipe, id_piloto, data_inicio) VALUES ((SELECT 
 
 
 -- Tabela Circuitos
+
+-- Inserir na tabela circuitos: nome, id_pais -> valores, procura id_pais na tabela paises onde sigla = 'País do circuito'
+
 INSERT INTO circuitos (nome, id_pais) VALUES ('Circuito do Grande Prêmio de Melbourne', (SELECT id_pais FROM paises WHERE sigla = 'AUS'));
 INSERT INTO circuitos (nome, id_pais) VALUES ('Circuito Internacional de Xangai', (SELECT id_pais FROM paises WHERE sigla = 'CHN'));
 
 
 
 -- Tabela Corridas
-INSERT INTO corridas (date_corrida, nome_corrida, duracao, id_circuito, nr_voltas) VALUES ('2025-03-16', 'Grande Prêmio da Austrália', '01:42:06.304', (SELECT id_circuito FROM circuitos WHERE nome = 'Circuito do Grande Prêmio de Melbourne'), 57);
-INSERT INTO corridas (date_corrida, nome_corrida, duracao, id_circuito, nr_voltas) VALUES ('2025-03-23', 'Grande Prêmio da China', '01:30:55.026', (SELECT id_circuito FROM circuitos WHERE nome = 'Circuito Internacional de Xangai'), 56);
+
+-- Inserir na tabela corridas: data_corrida, nome_corrida, duracao, id_circuito, nr_voltas -> valores
+--    -> data da corrida, nome da corrida, duração exata da corrida, procura id_circuito na tabela circuitos onde nome do circuito = "Nome do circuito daquela corrida"
+
+INSERT INTO corridas (data_corrida, nome_corrida, duracao, id_circuito, nr_voltas) VALUES ('2025-03-16', 'Grande Prêmio da Austrália', '01:42:06.304', (SELECT id_circuito FROM circuitos WHERE nome = 'Circuito do Grande Prêmio de Melbourne'), 57);
+INSERT INTO corridas (data_corrida, nome_corrida, duracao, id_circuito, nr_voltas) VALUES ('2025-03-23', 'Grande Prêmio da China', '01:30:55.026', (SELECT id_circuito FROM circuitos WHERE nome = 'Circuito Internacional de Xangai'), 56);
 
 
+-- Tabela Posições
+
+-- 20 pilotos, 2 corridas = 40 inserts
+
+-- Inserir na tabela posicoes: id_corrida, posicao_largada, posicao_chegada, tempo, nr_voltas, pontos, id_piloto, id_equipe -> valores
+--    -> procura id_corrida na tabela corridas onde o nome da corrida = 'Nome da corrida'
+--    -> posicao do piloto no inicio da corrida, posicao do piloto no fim da corrida
+--    -> tempo do piloto naquela corrida
+--    -> numero de voltas daquela corrida
+--    -> pontuação zerada pois será preenchida por procedure
+--    -> procura id_piloto na tabela pilotos onde o nome do piloto = 'Nome do piloto participante da corrida'
+--    -> procura id_equipe na tabela equipes onde o nome da equipe = 'Nome da equipe do piloto participante'
 
 INSERT INTO posicoes (id_corrida, posicao_largada, posicao_chegada, tempo, nr_voltas, pontos, id_piloto, id_equipe) VALUES ((SELECT id_corrida FROM corridas WHERE nome_corrida = 'Grande Prêmio da Austrália'), 1, 1, '01:42:06.304', 57, 0, (SELECT id_piloto FROM pilotos WHERE nome = 'Lando Norris'), (SELECT id_equipe FROM equipes WHERE nome = 'McLaren'));
 INSERT INTO posicoes (id_corrida, posicao_largada, posicao_chegada, tempo, nr_voltas, pontos, id_piloto, id_equipe) VALUES ((SELECT id_corrida FROM corridas WHERE nome_corrida = 'Grande Prêmio da Austrália'), 2, 2, '01:42:07.200', 57, 0, (SELECT id_piloto FROM pilotos WHERE nome = 'Max Verstappen'), (SELECT id_equipe FROM equipes WHERE nome = 'Red Bull Racing'));

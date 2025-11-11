@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS circuitos (
 
 CREATE TABLE IF NOT EXISTS corridas(
     id_corrida serial primary key,
-    date_corrida date not null,
+    data_corrida date not null,
     nome_corrida varchar(100) not null,
     duracao interval,
     id_circuito int references circuitos(id_circuito),
