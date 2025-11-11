@@ -1,1 +1,1 @@
-select * from equipes
+select * from circuitos
