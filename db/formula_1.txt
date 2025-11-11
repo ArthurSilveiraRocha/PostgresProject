@@ -1,6 +1,11 @@
 -- Arthur Rocha e Kauã Duarte
 --------------------------
 
+/*Banco está também em um repositório na nuvem pelo serviço NeonTech
+Desnecessário, mas queria saber como funcionava subir um banco na nuvem
+A string de conexão é essa: psql 'postgresql://neondb_owner:npg_Rt62oTMLHgnJ@ep-tiny-dawn-adtizesv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+Se quiser conferir o repositório Git, por curiosidade, é esse: https://github.com/ArthurSilveiraRocha/PostgresProject.git*/
+
 /*
 Legendas
 SERIAL -> Incrementa o valor conforme quantia de inserts na tabela
