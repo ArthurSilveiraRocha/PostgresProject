@@ -1,1 +1,1 @@
-select * from posicoes
+select * from pilotos
